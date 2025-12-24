@@ -7,6 +7,7 @@ import { initResolutions } from './components/Resolutions.js'
 import { Router } from './components/Router.js'
 import { UserData } from './components/UserData.js'
 import { initAdvicePicker } from './components/AdvicePicker.js'
+import { AdminDashboard } from './components/Admin.js'
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log("App Initializing...");
@@ -36,11 +37,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (btn && input) {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const name = input.value.trim();
         if (name) {
-          UserData.setName(name);
-          Router.navigate('home');
+          btn.innerText = "Joining...";
+          btn.disabled = true;
+
+          const success = await UserData.registerUser(name);
+
+          btn.innerText = "Enter";
+          btn.disabled = false;
+
+          if (success) {
+            Router.navigate('home');
+          }
         } else {
           alert("Please enter a name to join the party!");
         }
@@ -64,4 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
   try {
     initResolutions('resolutions-container');
   } catch (e) { console.error("Resolutions Failed", e); }
+
+  // 8. Admin Dashboard
+  try {
+    AdminDashboard.init('admin-container');
+  } catch (e) { console.error("Admin Init Failed", e); }
 });

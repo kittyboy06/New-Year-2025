@@ -2,7 +2,7 @@
 import { UserData } from './UserData.js';
 
 export const Router = {
-    routes: ['landing', 'home', 'game', 'resolutions', 'advice'],
+    routes: ['landing', 'home', 'game', 'resolutions', 'advice', 'admin'],
 
     init() {
         window.addEventListener('hashchange', () => this.handleRoute());

@@ -289,13 +289,29 @@ export class BreakoutGame {
 
     async saveScore() {
         const name = UserData.getName();
+        if (!name || name === 'Anonymous') {
+            console.log("Score not saved: User not registered.");
+            return;
+        }
+
+        console.log(`Saving Score for ${name}: ${this.score}`);
+
         try {
             // Include user_name in insert
-            await supabase.from('scores').insert([{
-                user_name: name || 'Anonymous',
+            const { data, error } = await supabase.from('scores').insert([{
+                user_name: name,
                 score: this.score
             }]);
-            console.log("Score saved to DB");
-        } catch (e) { console.error("Score save failed", e); }
+
+            if (error) {
+                console.error("Supabase Error:", error);
+                alert("Score Error: " + error.message); // Visible feedback for user
+            } else {
+                console.log("Score saved to DB Successfully", data);
+            }
+        } catch (e) {
+            console.error("Score save failed fatally", e);
+            alert("Score Save Failed: " + e.message);
+        }
     }
 }

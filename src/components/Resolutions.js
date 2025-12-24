@@ -14,6 +14,9 @@ export async function initResolutions(containerId) {
         <input type="text" id="res-input" placeholder="My goal for 2025..." />
         <button id="add-res-btn">Add</button>
       </div>
+      <div class="actions" style="margin-top: 10px; text-align: right;">
+        <button id="download-btn" style="background: transparent; border: 1px solid var(--color-primary); color: var(--color-primary); font-size: 0.8rem; padding: 5px 10px;">⬇ Download .txt</button>
+      </div>
       <div id="loading-indicator">Loading...</div>
       <ul id="res-list" class="res-list"></ul>
     </div>
@@ -21,6 +24,7 @@ export async function initResolutions(containerId) {
 
   const input = document.getElementById('res-input');
   const btn = document.getElementById('add-res-btn');
+  const downloadBtn = document.getElementById('download-btn');
   const list = document.getElementById('res-list');
   const loader = document.getElementById('loading-indicator');
 
@@ -30,6 +34,54 @@ export async function initResolutions(containerId) {
   btn.addEventListener('click', addResolution);
   input.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') addResolution();
+  });
+
+  downloadBtn.addEventListener('click', () => {
+    const items = list.querySelectorAll('li span'); // Get span content
+    if (items.length === 0) {
+      alert("No resolutions to download!");
+      return;
+    }
+
+    const name = UserData.getName() || 'Dreamer';
+    const date = new Date().toLocaleDateString();
+
+    let content = `
+==================================================
+      ✨  NEW YEAR RESOLUTIONS 2025  ✨
+==================================================
+
+  Name: ${name}
+  Date: ${date}
+
+--------------------------------------------------
+
+  "The future belongs to those who believe 
+   in the beauty of their dreams."
+
+--------------------------------------------------
+
+  MY GOALS:
+
+`;
+
+    items.forEach((span, i) => {
+      content += `  [ ${i + 1} ]  ${span.innerText}\n\n`;
+    });
+
+    content += `
+==================================================
+        Make 2025 Your Best Year Yet! 🚀
+==================================================
+`;
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `resolutions_2025_${name.replace(/\s+/g, '_')}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   });
 
   async function fetchResolutions() {

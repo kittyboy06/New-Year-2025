@@ -6,9 +6,27 @@ export const UserData = {
     score: 0, // High score
     advice: null,
 
-    setName(name) {
-        this.name = name;
-        localStorage.setItem('ny2025_name', name);
+    async registerUser(name) {
+        if (!name) return false;
+
+        try {
+            // Check or Insert User
+            const { data, error } = await supabase.from('users').insert([{ name: name }]).select();
+
+            if (error) {
+                console.error("Registration Failed:", error);
+                throw error;
+            }
+
+            console.log("User Registered:", data);
+            this.name = name;
+            localStorage.setItem('ny2025_name', name);
+            return true;
+        } catch (e) {
+            console.error("User Register Error", e);
+            alert("Could not register: " + (e.message || "Unknown error"));
+            return false;
+        }
     },
 
     getName() {

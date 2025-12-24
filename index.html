@@ -32,11 +32,13 @@
 
       <!-- View 2: Home (Dashboard) -->
       <section id="view-home" class="view-section">
-        <h1 class="title">Countdown to <span class="gold">2025</span></h1>
-        <div id="countdown-display" class="countdown">
-          <!-- Injected by JS -->
+        <div class="glass-card" style="margin-top: 50px;">
+          <h1 class="title">Countdown to <span class="gold">2025</span></h1>
+          <div id="countdown-display" class="countdown">
+            <div style="font-size: 2rem; color: #888;">Loading...</div>
+          </div>
+          <p style="text-align: center; color: #aaa; margin-top: 20px;">Explore the tabs below!</p>
         </div>
-        <p style="text-align: center; color: #aaa; margin-top: 20px;">Explore the tabs below!</p>
       </section>
 
       <!-- View 3: Game -->
@@ -61,6 +63,13 @@
       <section id="view-resolutions" class="view-section">
         <div id="resolutions-container">
           <!-- Mounted by Resolutions.js -->
+        </div>
+      </section>
+
+      <!-- View 6: Admin Dashboard (Hidden) -->
+      <section id="view-admin" class="view-section">
+        <div id="admin-container">
+          <!-- Mounted by Admin.js -->
         </div>
       </section>
 
