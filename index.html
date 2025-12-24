@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Year 2025 Celebration</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="app">
+      <!-- Background Canvas for Fireworks -->
+      <canvas id="fireworks-canvas"></canvas>
+      
+      <main class="container">
+        <header id="hero-section">
+          <h1 class="title">New Year <span class="gold">2025</span></h1>
+          <div id="countdown-display" class="countdown">
+            <!-- Countdown timer will be injected here -->
+          </div>
+        </header>
+
+        <section id="game-section">
+          <div class="glass-card">
+            <h2>Firework Hunt</h2>
+            <p>Catch the fireworks to unlock the Golden Theme!</p>
+            <div class="score-board">
+              Score: <span id="score-value">0</span>
+            </div>
+          </div>
+        </section>
+
+        <section id="resolutions-section">
+          <!-- Resolutions component will be mounted here -->
+        </section>
+      </main>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
