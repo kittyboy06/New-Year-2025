@@ -470,3 +470,38 @@ button:active {
   border-left: 4px solid var(--color-primary);
   padding-left: 10px;
 }
+
+/* MOBILE OPTIMIZATIONS */
+@media (max-width: 480px) {
+  .title {
+    font-size: 2rem;
+    /* Smaller title */
+  }
+
+  .glass-card {
+    padding: 20px;
+    /* Less padding */
+  }
+
+  .nav-bar {
+    width: 90%;
+    gap: 15px;
+    /* Tighter gap */
+    padding: 10px 20px;
+    bottom: 15px;
+  }
+
+  .nav-item span:not(.nav-icon) {
+    display: none;
+    /* Hide text labels, icons only */
+  }
+
+  .nav-item {
+    font-size: 1.8rem;
+    /* Larger icons */
+  }
+
+  #game-container {
+    border-radius: 8px;
+  }
+}

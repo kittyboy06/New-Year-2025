@@ -120,6 +120,11 @@ export class BreakoutGame {
                 this.startGame();
             }
         });
+
+        // Mobile Audio Resume Support
+        this.canvas.addEventListener("touchstart", () => {
+            this.sound.resume();
+        }, { passive: true });
     }
 
     startGame() {
@@ -256,8 +261,21 @@ export class BreakoutGame {
             this.sound.playHit();
         }
         else if (this.y + this.dy > this.height - 6 - this.paddleHeight - 5) {
-            if (this.x > this.paddleX && this.x < this.paddleX + this.paddleWidth) {
-                this.dy = -this.speed;
+            // Check paddle collision with a bit more leniency for fast movements
+            if (this.x > this.paddleX - 5 && this.x < this.paddleX + this.paddleWidth + 5) {
+                // Ensure ball is actually ABOVE the paddle center roughly before bouncing
+                // This prevents "dragging" the ball if it hits the side
+
+                // Force ball UP
+                this.dy = -Math.abs(this.speed);
+
+                // Add some English (spin) based on where it hit the paddle
+                const hitPoint = this.x - (this.paddleX + this.paddleWidth / 2);
+                this.dx = hitPoint * 0.15; // Influence X speed
+
+                // Push ball out of paddle to prevent sticking
+                this.y = this.height - this.paddleHeight - 20;
+
                 this.sound.playPaddle();
                 if (navigator.vibrate) navigator.vibrate(20);
             } else if (this.y + this.dy > this.height) {
