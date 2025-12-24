@@ -31,6 +31,9 @@ export const Router = {
             }
         });
 
+        // Trigger Event for Components (e.g. Game Resize)
+        window.dispatchEvent(new CustomEvent('routeChanged', { detail: { route: hash } }));
+
         // Toggle Nav Bar
         const nav = document.getElementById('main-nav');
         if (hash === 'landing') {

@@ -9,49 +9,59 @@ import { UserData } from './components/UserData.js'
 import { initAdvicePicker } from './components/AdvicePicker.js'
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Initialize Core
-  Router.init();
-  initCountdown('countdown-display');
-  // Fireworks (Background)
-  new FireworkSystem('fireworks-canvas');
+  console.log("App Initializing...");
 
-  // 2. Landing Page Logic
-  const input = document.getElementById('username-input');
-  const btn = document.getElementById('btn-enter');
+  // 1. Core Router
+  try {
+    Router.init();
+  } catch (e) { console.error("Router Init Failed", e); }
 
-  if (UserData.isRegistered()) {
-    Router.navigate('home');
-  }
+  // 2. Countdown (Home)
+  try {
+    initCountdown('countdown-display');
+  } catch (e) { console.error("Countdown Init Failed", e); }
 
-  btn.addEventListener('click', () => {
-    const name = input.value.trim();
-    if (name) {
-      UserData.setName(name);
+  // 3. Fireworks (Background)
+  try {
+    new FireworkSystem('fireworks-canvas');
+  } catch (e) { console.error("Fireworks Init Failed", e); }
+
+  // 4. Landing Page Logic
+  try {
+    const input = document.getElementById('username-input');
+    const btn = document.getElementById('btn-enter');
+
+    if (UserData.isRegistered()) {
       Router.navigate('home');
-    } else {
-      alert("Please enter a name to join the party!");
     }
-  });
 
-  // 3. Game Initialization
-  // Only init game when view is active to save resources? 
-  // For simplicity, we init it but maybe pause it.
-  // Actually, BreakoutGame binds to canvas, which is always in DOM now.
-  const game = new BreakoutGame('sparkler-canvas');
+    if (btn && input) {
+      btn.addEventListener('click', () => {
+        const name = input.value.trim();
+        if (name) {
+          UserData.setName(name);
+          Router.navigate('home');
+        } else {
+          alert("Please enter a name to join the party!");
+        }
+      });
+    }
+  } catch (e) { console.error("Landing Logic Failed", e); }
 
-  // 4. Advice Picker
-  initAdvicePicker('advice-container');
+  // 5. Game
+  try {
+    if (document.getElementById('sparkler-canvas')) {
+      new BreakoutGame('sparkler-canvas');
+    }
+  } catch (e) { console.error("Game Init Failed", e); }
 
-  // 5. Resolutions
-  // We need to target the container inside view-resolutions
-  // Adjust Resolutions.js to render entire card if needed, or just mount to ID
-  // Let's assume initResolutions mounts the card content
-  // We need to wrap it in a container in HTML which we did: #resolutions-container
-  // But wait, Resolutions.js expects an ID to mount TO.
-  // Let's modify Resolutions.js slightly or ensuring styling works.
+  // 6. Advice Picker
+  try {
+    initAdvicePicker('advice-container');
+  } catch (e) { console.error("Advice Picker Failed", e); }
 
-  // Quick fix: Rename inner HTML ID in index.html to match
-  // logic in Resolutions.js (it creates innerHTML).
-  // We passed 'resolutions-container' (which was 'resolutions-section' before)
-  initResolutions('resolutions-container');
+  // 7. Resolutions
+  try {
+    initResolutions('resolutions-container');
+  } catch (e) { console.error("Resolutions Failed", e); }
 });

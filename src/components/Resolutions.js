@@ -1,45 +1,113 @@
 
-export function initResolutions(containerId) {
-    const container = document.getElementById(containerId);
+import { supabase } from '../supabaseClient';
+import { UserData } from './UserData';
 
-    // Initial Markup
-    container.innerHTML = `
+export async function initResolutions(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  // Markup
+  container.innerHTML = `
     <div class="resolutions-card">
-      <h2>My 2025 Resolutions</h2>
+      <h2>Resolutions for ${UserData.getName() ? UserData.getName() : 'You'}</h2>
       <div class="input-group">
-        <input type="text" id="res-input" placeholder="Enter a new resolution..." />
+        <input type="text" id="res-input" placeholder="My goal for 2025..." />
         <button id="add-res-btn">Add</button>
       </div>
+      <div id="loading-indicator">Loading...</div>
       <ul id="res-list" class="res-list"></ul>
     </div>
   `;
 
-    const input = document.getElementById('res-input');
-    const btn = document.getElementById('add-res-btn');
-    const list = document.getElementById('res-list');
+  const input = document.getElementById('res-input');
+  const btn = document.getElementById('add-res-btn');
+  const list = document.getElementById('res-list');
+  const loader = document.getElementById('loading-indicator');
 
-    btn.addEventListener('click', addResolution);
-    input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') addResolution();
+  // Load from DB
+  await fetchResolutions();
+
+  btn.addEventListener('click', addResolution);
+  input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') addResolution();
+  });
+
+  async function fetchResolutions() {
+    try {
+      // Fetch resolutions for specific user
+      // OR fetch all? Let's fetch for current user name
+      const userName = UserData.getName();
+      if (!userName) return; // Should be handled by router guard
+
+      const { data, error } = await supabase
+        .from('resolutions')
+        .select('*')
+        .eq('user_name', userName)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      list.innerHTML = '';
+      data.forEach(item => renderItem(item));
+    } catch (err) {
+      console.error('Error loading resolutions:', err);
+      list.innerHTML = `<li style="color:red">Failed to load list. Check database!</li>`;
+    } finally {
+      if (loader) loader.style.display = 'none';
+    }
+  }
+
+  async function addResolution() {
+    const text = input.value.trim();
+    const userName = UserData.getName();
+    if (!text || !userName) return;
+
+    // Optimistic UI Update (Instant feel)
+    const tempId = Date.now();
+    const tempItem = { id: tempId, content: text, user_name: userName };
+    renderItem(tempItem);
+    input.value = '';
+
+    try {
+      const { data, error } = await supabase
+        .from('resolutions')
+        .insert([{ user_name: userName, content: text }])
+        .select();
+
+      if (error) throw error;
+
+      // Optionally replace temp item with real one or just leave it
+      // Real refresh would ensure consistency but flicker.
+    } catch (err) {
+      console.error('Error adding resolution:', err);
+      alert("Failed to save to database!");
+      // Remove the optimistic item?
+      const el = document.getElementById(`res-${tempId}`);
+      if (el) el.remove();
+    }
+  }
+
+  function renderItem(item) {
+    const li = document.createElement('li');
+    li.id = `res-${item.id}`;
+    li.className = 'res-item fade-in-up';
+    li.innerHTML = `
+            <span>${item.content}</span>
+            <button class="delete-btn" data-id="${item.id}">&times;</button>
+        `;
+
+    // Delete
+    li.querySelector('.delete-btn').addEventListener('click', async (e) => {
+      const id = e.target.getAttribute('data-id');
+      li.remove(); // Optimistic delete
+
+      try {
+        await supabase.from('resolutions').delete().eq('id', id);
+      } catch (err) {
+        console.error("Delete failed", err);
+      }
     });
 
-    function addResolution() {
-        const text = input.value.trim();
-        if (!text) return;
-
-        const li = document.createElement('li');
-        li.className = 'res-item fade-in-up';
-        li.innerHTML = `
-      <span>${text}</span>
-      <button class="delete-btn">&times;</button>
-    `;
-
-        // Delete functionality
-        li.querySelector('.delete-btn').addEventListener('click', () => {
-            li.remove();
-        });
-
-        list.appendChild(li);
-        input.value = '';
-    }
+    list.appendChild(li);
+  }
 }
