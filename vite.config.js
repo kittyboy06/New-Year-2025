@@ -1,7 +1,8 @@
 
 import { defineConfig } from 'vite'
+import { viteSingleFile } from 'vite-plugin-singlefile'
 
 export default defineConfig({
-    // Use the repository name as the base path for GitHub Pages
-    base: '/New-Year-2025/'
+    plugins: [viteSingleFile()],
+    base: './'
 })
