@@ -1,13 +1,54 @@
 
 import { supabase } from '../supabaseClient';
 
+// Simple Synthesizer for "No Asset" Sounds
+class SoundManager {
+    constructor() {
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    playTone(freq, type, duration) {
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+
+        gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+    }
+
+    playHit() { this.playTone(400, 'square', 0.1); }
+    playPaddle() { this.playTone(300, 'triangle', 0.1); }
+    playBrick() {
+        // Random chord-like sparkle
+        this.playTone(600 + Math.random() * 200, 'sine', 0.15);
+        this.playTone(1200 + Math.random() * 200, 'sine', 0.15);
+    }
+    playWin() {
+        [440, 554, 659, 880].forEach((f, i) => {
+            setTimeout(() => this.playTone(f, 'square', 0.3), i * 100);
+        });
+    }
+}
+
 export class BreakoutGame {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
+        this.container = document.getElementById('game-container'); // For Shake
         this.ctx = this.canvas.getContext('2d');
 
         this.width = this.canvas.width = this.canvas.offsetWidth;
         this.height = this.canvas.height = 400;
+
+        this.sound = new SoundManager();
 
         this.isPlaying = false;
         this.score = 0;
@@ -27,7 +68,7 @@ export class BreakoutGame {
         this.brickColumnCount = 8;
         this.brickPadding = 10;
         this.brickOffsetTop = 50;
-        this.brickOffsetLeft = 20; // Dynamic calc
+        this.brickOffsetLeft = 20;
         this.brickWidth = 0;
         this.brickHeight = 20;
 
@@ -37,14 +78,11 @@ export class BreakoutGame {
         this.initBricks();
         this.bindControls();
 
-        // Initial draw
         this.drawStartScreen();
     }
 
     initBricks() {
-        // Recalc width based on actual canvas size
         this.brickWidth = (this.width - (this.brickPadding * (this.brickColumnCount - 1)) - (this.brickOffsetLeft * 2)) / this.brickColumnCount;
-
         for (let c = 0; c < this.brickColumnCount; c++) {
             this.bricks[c] = [];
             for (let r = 0; r < this.brickRowCount; r++) {
@@ -59,39 +97,38 @@ export class BreakoutGame {
     }
 
     bindControls() {
-        // Touch: Prevent scrolling!
         this.canvas.style.touchAction = "none";
-
         const movePaddle = (x) => {
             this.paddleX = x - this.paddleWidth / 2;
-
-            // Clamp
             if (this.paddleX < 0) this.paddleX = 0;
             if (this.paddleX + this.paddleWidth > this.width) this.paddleX = this.width - this.paddleWidth;
         };
 
         const moveHandler = (e) => {
-            // e.preventDefault(); // Stop scroll
             const relativeX = (e.clientX || e.touches[0].clientX) - this.canvas.getBoundingClientRect().left;
             movePaddle(relativeX);
         };
 
         document.addEventListener("mousemove", moveHandler, false);
         this.canvas.addEventListener("touchmove", (e) => {
-            if (e.cancelable) e.preventDefault(); // CRITICAL: Stop Android scroll
+            if (e.cancelable) e.preventDefault();
             moveHandler(e);
         }, { passive: false });
 
-        this.canvas.addEventListener("click", () => {
-            if (!this.isPlaying) this.startGame();
-        });
-        // Also touchstart to start
         this.canvas.addEventListener("touchstart", (e) => {
             if (!this.isPlaying) {
                 e.preventDefault();
+                this.sound.ctx.resume(); // Unlock audio context
                 this.startGame();
             }
         }, { passive: false });
+
+        this.canvas.addEventListener("click", () => {
+            if (!this.isPlaying) {
+                this.sound.ctx.resume();
+                this.startGame();
+            }
+        });
     }
 
     startGame() {
@@ -106,20 +143,26 @@ export class BreakoutGame {
     resetBall() {
         this.x = this.width / 2;
         this.y = this.height - 40;
-        this.speed = 5; // Base speed
-        const dir = Math.random() * Math.PI / 2 + Math.PI / 4; // Random angle up
+        this.speed = 5;
+        const dir = Math.random() * Math.PI / 2 + Math.PI / 4;
         this.dx = this.speed * Math.cos(30 * Math.PI / 180) * (Math.random() > 0.5 ? 1 : -1);
         this.dy = -this.speed;
         this.paddleX = (this.width - this.paddleWidth) / 2;
     }
 
+    triggerShake() {
+        this.container.classList.remove('shake');
+        void this.container.offsetWidth; // Force reflow
+        this.container.classList.add('shake');
+        if (navigator.vibrate) navigator.vibrate(50); // HAPTIC FEEDBACK
+    }
+
     createExplosion(x, y, color) {
-        // More particles, varied sizes
         for (let i = 0; i < 20; i++) {
             this.particles.push({
                 x: x,
                 y: y,
-                vx: (Math.random() - 0.5) * 8, // Faster explosion
+                vx: (Math.random() - 0.5) * 8,
                 vy: (Math.random() - 0.5) * 8,
                 life: 1,
                 color: color,
@@ -137,33 +180,32 @@ export class BreakoutGame {
                         this.dy = -this.dy;
                         b.status = 0;
                         this.score++;
-                        this.createExplosion(b.x + this.brickWidth / 2, b.y + this.brickHeight / 2, b.color);
 
-                        // Slight speed up, but cap it
-                        if (this.speed < 9) {
+                        this.sound.playBrick();
+                        this.createExplosion(b.x + this.brickWidth / 2, b.y + this.brickHeight / 2, b.color);
+                        this.triggerShake();
+
+                        if (this.speed < 10) {
                             this.speed += 0.05;
-                            // Normalizing velocity to match new speed
                             const angle = Math.atan2(this.dy, this.dx);
                             this.dx = Math.cos(angle) * this.speed;
                             this.dy = Math.sin(angle) * this.speed;
                         }
 
                         if (this.score === this.brickRowCount * this.brickColumnCount) {
-                            // Respawn bricks logic or win? let's loop levels
-                            this.initBricks();
+                            this.sound.playWin();
+                            setTimeout(() => { alert("YOU WIN!"); this.gameOver(); }, 500);
                         }
-                        return; // Only hit one brick per frame
+                        return;
                     }
                 }
             }
         }
     }
 
+    // Draw methods same as before...
     draw() {
-        // Clear with trail for motion blur effect? No, clean clear.
         this.ctx.clearRect(0, 0, this.width, this.height);
-
-        // Draw Elements
         this.drawBall();
         this.drawPaddle();
         this.drawBricks();
@@ -185,7 +227,7 @@ export class BreakoutGame {
     drawPaddle() {
         this.ctx.beginPath();
         this.ctx.roundRect(this.paddleX, this.height - this.paddleHeight - 5, this.paddleWidth, this.paddleHeight, 5);
-        this.ctx.fillStyle = "#FFD700"; // Golden Paddle
+        this.ctx.fillStyle = "#FFD700";
         this.ctx.shadowBlur = 15;
         this.ctx.shadowColor = "rgba(255, 215, 0, 0.5)";
         this.ctx.fill();
@@ -216,8 +258,8 @@ export class BreakoutGame {
             const p = this.particles[i];
             p.x += p.vx;
             p.y += p.vy;
-            p.life -= 0.03; // Last longer
-            p.vy += 0.1; // Gravity!
+            p.life -= 0.03;
+            p.vy += 0.1;
 
             if (p.life <= 0) {
                 this.particles.splice(i, 1);
@@ -244,24 +286,25 @@ export class BreakoutGame {
         // Wall Collision X
         if (this.x + this.dx > this.width - this.ballRadius || this.x + this.dx < this.ballRadius) {
             this.dx = -this.dx;
+            this.sound.playHit();
         }
 
         // Ceiling
         if (this.y + this.dy < this.ballRadius) {
             this.dy = -this.dy;
+            this.sound.playHit();
         }
-        // Floor (Paddle Check)
         else if (this.y + this.dy > this.height - this.ballRadius - this.paddleHeight - 5) {
             if (this.x > this.paddleX && this.x < this.paddleX + this.paddleWidth) {
-                // Paddle Hit
-                // Calculate relative hit position (-1 to 1)
                 let hitPoint = 2 * (this.x - (this.paddleX + this.paddleWidth / 2)) / this.paddleWidth;
-
-                // Angle bounce
                 this.forceBounce(hitPoint);
+                this.sound.playPaddle();
+                if (navigator.vibrate) navigator.vibrate(20); // Light tap
             } else if (this.y + this.dy > this.height - this.ballRadius) {
-                // Dead
                 this.lives--;
+                this.sound.playTone(150, 'sawtooth', 0.3); // Fail sound
+                if (navigator.vibrate) navigator.vibrate(200); // Heavy buzz
+
                 if (!this.lives) {
                     this.gameOver();
                 } else {
@@ -272,19 +315,13 @@ export class BreakoutGame {
 
         this.x += this.dx;
         this.y += this.dy;
-
         this.collisionDetection();
     }
 
     forceBounce(hitPoint) {
-        // Cap hitpoint
         if (hitPoint > 1) hitPoint = 1;
         if (hitPoint < -1) hitPoint = -1;
-
-        // Max bounce angle 60 degrees
         let angle = hitPoint * Math.PI / 3;
-
-        // Keep speed constant but change direction
         this.dx = this.speed * Math.sin(angle);
         this.dy = -this.speed * Math.cos(angle);
     }
@@ -304,15 +341,16 @@ export class BreakoutGame {
         this.ctx.fillText("Break the Year", this.width / 2, this.height / 2 - 20);
         this.ctx.font = '16px Inter';
         this.ctx.fillText("Tap to Start", this.width / 2, this.height / 2 + 20);
+        this.ctx.font = '12px Inter';
+        this.ctx.fillStyle = '#aaa';
+        this.ctx.fillText("Turn up volume 🔊", this.width / 2, this.height / 2 + 50);
     }
 
     gameOver() {
         this.isPlaying = false;
-        this.draw(); // Draw final state
-
+        this.draw();
         this.ctx.fillStyle = 'rgba(0,0,0,0.8)';
         this.ctx.fillRect(0, 0, this.width, this.height);
-
         this.ctx.fillStyle = '#FFD700';
         this.ctx.font = 'bold 30px Inter';
         this.ctx.textAlign = 'center';
@@ -320,11 +358,10 @@ export class BreakoutGame {
         this.ctx.fillStyle = 'white';
         this.ctx.font = '20px Inter';
         this.ctx.fillText(`Final Score: ${this.score}`, this.width / 2, this.height / 2 + 10);
-
         this.saveScore();
 
         setTimeout(() => {
-            this.drawStartScreen(); // Reset UI
+            this.drawStartScreen();
             this.canvas.addEventListener('click', () => {
                 if (!this.isPlaying) this.startGame();
             }, { once: true });
@@ -332,10 +369,6 @@ export class BreakoutGame {
     }
 
     async saveScore() {
-        try {
-            await supabase.from('scores').insert([
-                { score: this.score, timestamp: new Date() }
-            ]);
-        } catch (err) { }
+        try { await supabase.from('scores').insert([{ score: this.score, timestamp: new Date() }]); } catch (e) { }
     }
 }
