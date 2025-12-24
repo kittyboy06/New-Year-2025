@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>New Year 2025 Celebration</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>New Year 2025</title>
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,34 +14,78 @@
 
 <body>
   <div id="app">
-    <!-- Background Canvas for Fireworks -->
+    <!-- Background Canvas -->
     <canvas id="fireworks-canvas"></canvas>
 
-    <main class="container">
-      <header id="hero-section">
-        <h1 class="title">New Year <span class="gold">2025</span></h1>
-        <div id="countdown-display" class="countdown">
-          <!-- Countdown timer will be injected here -->
-        </div>
-      </header>
+    <!-- Main Content Area with Scroll -->
+    <div id="main-content">
 
-      <section id="game-section">
+      <!-- View 1: Landing (Name Collect) -->
+      <section id="view-landing" class="view-section active">
+        <div class="landing-card">
+          <h1 class="title">New Year <span class="gold">2025</span></h1>
+          <p>Join the Celebration</p>
+          <input type="text" id="username-input" placeholder="Enter Your Name" maxlength="20" />
+          <button id="btn-enter" class="btn-primary">Enter</button>
+        </div>
+      </section>
+
+      <!-- View 2: Home (Dashboard) -->
+      <section id="view-home" class="view-section">
+        <h1 class="title">Countdown to <span class="gold">2025</span></h1>
+        <div id="countdown-display" class="countdown">
+          <!-- Injected by JS -->
+        </div>
+        <p style="text-align: center; color: #aaa; margin-top: 20px;">Explore the tabs below!</p>
+      </section>
+
+      <!-- View 3: Game -->
+      <section id="view-game" class="view-section">
         <div class="glass-card">
           <h2>Break the Year</h2>
           <div id="game-container">
             <canvas id="sparkler-canvas"></canvas>
           </div>
+          <p style="font-size: 0.8rem; color: #888; margin-top: 10px;">Smash 2024 to welcome 2025!</p>
         </div>
       </section>
 
-      <section id="resolutions-section">
-        <!-- Resolutions component will be mounted here -->
+      <!-- View 4: Advice Picker -->
+      <section id="view-advice" class="view-section">
+        <div class="glass-card" id="advice-container">
+          <!-- Injected by JS -->
+        </div>
       </section>
 
-      <footer>
-        <p>Made with ✨ for 2025</p>
-      </footer>
-    </main>
+      <!-- View 5: Resolutions -->
+      <section id="view-resolutions" class="view-section">
+        <div id="resolutions-container">
+          <!-- Mounted by Resolutions.js -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav id="main-nav" class="nav-bar">
+      <a href="#home" class="nav-item">
+        <span class="nav-icon">⏳</span>
+        <span>Home</span>
+      </a>
+      <a href="#game" class="nav-item">
+        <span class="nav-icon">🎮</span>
+        <span>Game</span>
+      </a>
+      <a href="#advice" class="nav-item">
+        <span class="nav-icon">📜</span>
+        <span>Tips</span>
+      </a>
+      <a href="#resolutions" class="nav-item">
+        <span class="nav-icon">📝</span>
+        <span>List</span>
+      </a>
+    </nav>
+
   </div>
   <script type="module" src="/src/main.js"></script>
 </body>
