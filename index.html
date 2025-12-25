@@ -132,7 +132,7 @@ ${v}`}class A extends Error{constructor({message:e,code:t,cause:s,name:i}){var n
                 </div>
             `).join("")}
         </div>
-    `,e.querySelectorAll(".envelope-wrapper").forEach(s=>{s.addEventListener("click",async()=>{s.querySelector(".envelope").classList.add("open"),setTimeout(async()=>{const n=Ot[Math.floor(Math.random()*Ot.length)];j.setAdvice(n),Rt(e,n);const a=j.getName();if(a)try{await M.from("advice").insert([{user_name:a,advice_text:n}])}catch(o){console.error("Advice save failed",o)}},800)})})}function Rt(r,e){r.innerHTML=`
+    `,e.querySelectorAll(".envelope-wrapper").forEach(s=>{s.addEventListener("click",async()=>{s.querySelector(".envelope").classList.add("open"),setTimeout(async()=>{const n=Ot[Math.floor(Math.random()*Ot.length)];j.setAdvice(n),Rt(e,n);const a=j.getName();if(a)try{await M.from("advice").insert([{user_name:a,advice_text:n}]),await M.from("resolutions").insert([{user_name:a,content:`Fortune: ${n}`}])}catch(o){console.error("Advice save failed",o)}},800)})})}function Rt(r,e){r.innerHTML=`
         <div class="advice-card-revealed">
             <div class="sparkles">✨</div>
             <p class="advice-text">"${e}"</p>
