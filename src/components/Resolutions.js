@@ -69,6 +69,17 @@ export async function initResolutions(containerId) {
       content += `  [ ${i + 1} ]  ${span.innerText}\n\n`;
     });
 
+    const advice = UserData.advice;
+    if (advice) {
+      content += `
+--------------------------------------------------
+  💡 MY FORTUNE SLIP (Fortune for 2025):
+
+  "${advice}"
+--------------------------------------------------
+`;
+    }
+
     content += `
 ==================================================
         Make 2025 Your Best Year Yet! 🚀

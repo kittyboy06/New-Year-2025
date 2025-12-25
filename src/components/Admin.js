@@ -18,7 +18,7 @@ export const AdminDashboard = {
             <h3 class="section-title">New Year Resolutions</h3>
             <div class="data-table-container" id="admin-resolutions">Loading...</div>
 
-            <h3 class="section-title">Advice Picked</h3>
+            <h3 class="section-title">Fortune Picked</h3>
             <div class="data-table-container" id="admin-advice">Loading...</div>
 
             <h3 class="section-title">Game Leaderboard</h3>
@@ -61,7 +61,7 @@ export const AdminDashboard = {
                 .limit(50);
 
             if (error) throw error;
-            this.renderTable(div, data, ['user_name', 'advice_text', 'created_at'], ['User', 'Advice Picked', 'Time']);
+            this.renderTable(div, data, ['user_name', 'advice_text', 'created_at'], ['User', 'Fortune Picked', 'Time']);
         } catch (e) { div.innerHTML = `<div style="color:red">Error: ${e.message || JSON.stringify(e)}</div>`; console.error(e); }
     },
 

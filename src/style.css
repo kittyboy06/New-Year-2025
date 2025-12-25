@@ -472,33 +472,37 @@ button:active {
 }
 
 /* MOBILE OPTIMIZATIONS */
+/* MOBILE OPTIMIZATIONS */
 @media (max-width: 480px) {
   .title {
     font-size: 2rem;
-    /* Smaller title */
   }
 
   .glass-card {
     padding: 20px;
-    /* Less padding */
   }
 
   .nav-bar {
-    width: 90%;
-    gap: 15px;
-    /* Tighter gap */
-    padding: 10px 20px;
-    bottom: 15px;
+    width: 95%;
+    /* Wider to fit text */
+    gap: 10px;
+    padding: 8px 15px;
+    bottom: 10px;
+    justify-content: center;
+    /* Center items */
   }
 
   .nav-item span:not(.nav-icon) {
-    display: none;
-    /* Hide text labels, icons only */
+    display: inline;
+    /* Show text again */
+    font-size: 0.7rem;
+    /* Smaller text */
+    margin-left: 5px;
   }
 
   .nav-item {
-    font-size: 1.8rem;
-    /* Larger icons */
+    font-size: 1.2rem;
+    /* Moderate icon size */
   }
 
   #game-container {

@@ -178,6 +178,13 @@ export class BreakoutGame {
                             this.dx = (this.dx > 0 ? 1 : -1) * this.speed;
                             this.dy = (this.dy > 0 ? 1 : -1) * this.speed;
                         }
+
+                        // Check for Win (Level Clear)
+                        if (this.score % (this.brickRowCount * this.brickColumnCount) === 0) {
+                            this.sound.playWin();
+                            this.initBricks();
+                            this.resetBall();
+                        }
                         return;
                     }
                 }
@@ -249,6 +256,7 @@ export class BreakoutGame {
         this.ctx.font = "bold 16px Inter";
         this.ctx.fillStyle = "#fff";
         this.ctx.fillText("Score: " + this.score, 15, 25);
+        this.ctx.fillText("Lives: " + this.lives, this.width - 75, 25);
     }
 
     updatePhysics() {
